@@ -6,6 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import codecs
 import json
+import MySQLdb
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
 
@@ -25,6 +26,24 @@ class JsonWithEncodingPipeline(object):
 
     def spider_closed(self):
         self.file.closed
+
+
+class MysqlPipeline(object):
+    #采用同步的机制写入mysql
+    def __init__(self):
+        self.conn = MySQLdb.connect('127.0.0.1', 'root', 'kingwangboss', 'article_spride', charset="utf8", use_unicode=True)
+        self.cursor = self.conn.cursor()
+
+    def process_item(self, item, spider):
+        insert_sql = """
+            insert into article(url_object_id, title, url, fav_nums,content,tags,create_date,praise_nums)
+            VALUES (%s,%s, %s, %s, %s,(%s),(%s),(%s))
+        """
+        self.cursor.execute(insert_sql, (item["url_object_id"],item["title"],
+                                         item["url"], item["fav_nums"],item["content"],
+                                         item["tags"],item["create_date"],item["praise_nums"]))
+
+        self.conn.commit()
 
 class JsonExporterPipeline(object):
     #调用scrapy提供的jsonexporter导出json文件
