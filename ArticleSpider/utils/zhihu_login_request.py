@@ -105,4 +105,4 @@ def zhihu_login(account,password):
     print(login_code['msg'])
     session.cookies.save("zhihu_cookie.txt")
 
-zhihu_login('13537751102','07943688365')
+zhihu_login('','')
